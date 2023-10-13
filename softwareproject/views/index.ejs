@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>N-Queens Solver</title>
+</head>
+<body>
+    <h1>N-Queens Solver</h1>
+    <form method="POST" action="/solve">
+        <label for="nQueens">Enter the number of queens (N):</label>
+        <input type="number" name="nQueens" required>
+        <button type="submit">Solve</button>
+    </form>
+    <h2>Solutions:</h2>
+    <% if (solutions.length === 0) { %>
+        <p>No solutions found.</p>
+    <% } else { %>
+        <ul>
+            <% solutions.forEach((solution, index) => { %>
+                <li>Solution <%= index + 1 %>:</li>
+                <ul>
+                    <% solution.forEach((row) => { %>
+                        <li><%= row.join(' ') %></li>
+                    <% }); %>
+                </ul>
+            <% }); %>
+        </ul>
+    <% } %>
+</body>
+</html>
