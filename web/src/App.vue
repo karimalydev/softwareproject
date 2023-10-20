@@ -24,8 +24,12 @@
             <div class="form">
             <label for="queensInput">Enter the number of queens:</label>
             <input id="queensInput" type="number" v-model="nQueens" @input="updateChessboard">
+            <div class="choice-counter">
+              <h2>Score calculator : {{score}}</h2>
+            </div>
           </div>
             <div class="chessboard">
+                          <!-- this will let the user now if the cell selected is == solution cell-->
               <div v-for="(row, rowIndex) in chessboard" :key="rowIndex" class="row">
                 <div
                   v-for="(square, colIndex) in row"
@@ -37,11 +41,7 @@
                 </div>
               </div>
             </div>
-            <!-- this will let the user now if the cell selected is == solution cell-->
-            <div class="choice-counter">
-              <h2>Score calculator : {{score}}</h2>
-              
-            </div>
+
           </div>
           <!--right part of the container containingthe queen piece-->
           <div class="queen-right">
@@ -56,11 +56,13 @@
 
 <script setup>
 import { ref, watch } from 'vue';
+import axios from 'axios'
 
 const nQueens = ref(8); // Default to 8 queens
 const chessboardSize = ref(8); // Default board size
 const chessboard = ref([]);
-const score = 0;
+let solution = ref([]);
+let score = 0;
 
 //this function checks if the cell clicked by the user is correct and according to that it updates score-->
 function validChoices(cellClicked,correctSolution){
@@ -81,10 +83,44 @@ watch(chessboardSize, () => {
   initializeChessboard();
 });
 
-function initializeChessboard() {
+function randomizeToOneAndTwo(matrix) {
+    const positions = [];
+    for (let i = 0; i < matrix.length; i++) {
+        for (let j = 0; j < matrix[i].length; j++) {
+            if (matrix[i][j] === 1) {
+                positions.push([i, j]);
+            }
+        }
+    }
+
+    if (positions.length === 0) {
+        return;
+    }
+
+    const randomIndex = Math.floor(Math.random() * positions.length);
+    const [randomRow, randomCol] = positions[randomIndex];
+
+    for (let pos of positions) {
+        const [row, col] = pos;
+        if (row !== randomRow || col !== randomCol) {
+            matrix[row][col] = 2;
+        }
+    }
+
+    return matrix;
+}
+
+async function initializeChessboard() {
+
+  let response = await axios.get('http://localhost:3000/solutions?queens_number='+chessboardSize.value)
+  if (response.data.length === 0) {
+    alert('No solution found for the given number of queens. Please try again.');
+    return;
+  }
+  solution = randomizeToOneAndTwo(response.data[0]);
   chessboard.value = [];
   for (let i = 0; i < chessboardSize.value; i++) {
-    chessboard.value.push(Array(chessboardSize.value).fill(''));
+    chessboard.value.push(solution[i]);
   }
 }
 
@@ -101,7 +137,7 @@ function getSquareClass(rowIndex, colIndex) {
 
 function cellClicked(rowIndex, colIndex) {
   // Handle the click event for the chessboard cell
-  console.log(`Cell clicked: Row ${rowIndex}, Column ${colIndex}`);
+  alert(`Cell clicked: Row ${rowIndex}, Column ${colIndex}`);
 }
 
 function scrollToChessboard() {
@@ -187,7 +223,7 @@ function scrollToChessboard() {
   margin-bottom: 20px;
 }
 .form{
-  padding-bottom: 100px;
+  padding-bottom: 120px;
 
 }
 .form label{

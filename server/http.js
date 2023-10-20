@@ -1,6 +1,11 @@
 const express = require("express");
 const app = express();
 const bodyParser = require("body-parser");
+const cors = require('cors');
+
+
+
+app.use(cors());
 
 app.use(bodyParser.json())
 
@@ -64,11 +69,11 @@ app.get("/", (req, res) => {
 });
 
 // Handle the form submission
-app.post("/solve", (req, res) => {
-  const N = parseInt(req.body.nQueens);
+app.get("/solutions", (req, res) => {
+  const N = parseInt(req.query.queens_number);
   const solutions = solveNQueens(N);
   console.log(N, solutions);
-  res.send({solutions});
+  res.send(solutions);
 });
 
 // Start the server
