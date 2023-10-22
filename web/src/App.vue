@@ -25,9 +25,11 @@
             <label for="queensInput">Enter the number of queens:</label>
             <input id="queensInput" type="number" v-model="nQueens" @input="updateChessboard">
             <div class="choice-counter">
-              <h2>Score calculator : {{score}}</h2>
+              <h2>Remaining tries : {{score}}</h2>
             </div>
           </div>
+
+          <h2>Solutions : {{ currentSolutionIndex + 1 }} / {{ totalSolutions }}</h2>
             <div class="chessboard">
                           <!-- this will let the user now if the cell selected is == solution cell-->
               <div v-for="(row, rowIndex) in chessboard" :key="rowIndex" class="row">
@@ -37,7 +39,7 @@
                   :class="getSquareClass(rowIndex, colIndex)"
                   @click="cellClicked(rowIndex, colIndex)"
                 >
-                  {{ square }}
+                {{ square === 1 ? square : '' }}
                 </div>
               </div>
             </div>
@@ -61,17 +63,10 @@ import axios from 'axios'
 const nQueens = ref(8); // Default to 8 queens
 const chessboardSize = ref(8); // Default board size
 const chessboard = ref([]);
-let solution = ref([]);
-let score = 0;
-
-//this function checks if the cell clicked by the user is correct and according to that it updates score-->
-function validChoices(cellClicked,correctSolution){
-  if (cellClicked = correctSolution){
-      score++;
-  }else{
-        score--;
-      }
-}
+const allChessboard = ref([]);
+let score = ref(3);
+let totalSolutions = ref(0);
+let currentSolutionIndex = ref(0);
 
 function updateChessboard() {
   chessboardSize.value = nQueens.value;
@@ -111,16 +106,24 @@ function randomizeToOneAndTwo(matrix) {
 }
 
 async function initializeChessboard() {
-
+  score.value = 3;
   let response = await axios.get('http://localhost:3000/solutions?queens_number='+chessboardSize.value)
   if (response.data.length === 0) {
-    alert('No solution found for the given number of queens. Please try again.');
+    alert('Oops! No solutions found for ' + chessboardSize.value + ' queens. Please try a different number.');
     return;
   }
-  solution = randomizeToOneAndTwo(response.data[0]);
+  allChessboard.value = response.data;
+  totalSolutions.value = response.data.length;
+  currentSolutionIndex.value = 0;
+
+  showChessboardData(currentSolutionIndex.value);
+}
+
+function showChessboardData(chessboardIndex) {
+  let chessboardData = randomizeToOneAndTwo(allChessboard.value[chessboardIndex]);
   chessboard.value = [];
   for (let i = 0; i < chessboardSize.value; i++) {
-    chessboard.value.push(solution[i]);
+    chessboard.value.push(chessboardData[i]);
   }
 }
 
@@ -135,9 +138,57 @@ function getSquareClass(rowIndex, colIndex) {
   };
 }
 
+function showSolution() {
+  for (var i = 0; i < chessboardSize.value; i++) {
+    for (var j = 0; j < chessboardSize.value; j++) {
+        if (chessboard.value[i][j] == 2) {
+            chessboard.value[i][j] = 1;
+        }
+    }
+  }
+}
+
+function checkSolution() {
+  for (var i = 0; i < chessboardSize.value; i++) {
+    for (var j = 0; j < chessboardSize.value; j++) {
+        if (chessboard.value[i][j] == 2) {
+            return false;
+        }
+    }
+  }
+  return true;
+}
+
 function cellClicked(rowIndex, colIndex) {
   // Handle the click event for the chessboard cell
-  alert(`Cell clicked: Row ${rowIndex}, Column ${colIndex}`);
+  if (chessboard.value[rowIndex][colIndex] == 2) {
+    score.value++;
+    chessboard.value[rowIndex][colIndex] = 1;
+
+    if (checkSolution() && currentSolutionIndex.value == totalSolutions.value - 1) {
+      alert('Awesome! You solved all the solutions!');
+      return;
+    }
+
+    if (checkSolution()) {
+      alert('Great job! Moving on to the next solution.');
+      currentSolutionIndex.value += 1;
+      showChessboardData(currentSolutionIndex.value);
+    } else {
+      alert('Nice move!');
+    }
+    
+  } else {
+    if (score.value == 0) {
+      alert('Game Over! Better luck next time.');
+      showSolution();
+      // initializeChessboard();
+      return;
+    } else {
+      score.value--;
+      alert('Oops! Try a different square. Remaining tries: ' + score.value);
+    }
+  }
 }
 
 function scrollToChessboard() {
