@@ -18,3 +18,15 @@ cd ./server && node http.js
 ```bash
 cd ./web && npm run dev
 ```
+
+## Unit testing
+
+### Web Client
+```bash
+cd ./web && npm run test:unit
+```
+
+### Server
+```bash
+cd ./server && npm run test
+```

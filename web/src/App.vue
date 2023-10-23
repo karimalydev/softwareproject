@@ -60,8 +60,8 @@
 import { ref, watch } from 'vue';
 import axios from 'axios'
 
-const nQueens = ref(8); // Default to 8 queens
-const chessboardSize = ref(8); // Default board size
+const nQueens = ref(4); // Default to 8 queens
+const chessboardSize = ref(4); // Default board size
 const chessboard = ref([]);
 const allChessboard = ref([]);
 let score = ref(3);

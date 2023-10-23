@@ -77,6 +77,10 @@ app.get("/solutions", (req, res) => {
 });
 
 // Start the server
-app.listen(3000, () => {
-  console.log("Server is running on http://localhost:3000");
-});
+if (require.main === module) {  // This checks if this file is the main module being executed
+  app.listen(3000, () => {
+    console.log("Server is running on http://localhost:3000");
+  });
+}
+
+module.exports = app;
